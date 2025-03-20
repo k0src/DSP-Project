@@ -8,17 +8,10 @@ using Unity.Collections;
 
 public class DSPGraphManager : MonoBehaviour
 {
-    [Range(20f, 20000f)]
-    public float frequency = 440f;
-
-    [Range(0f, 1f)]
-    public float amplitude = 0.5f;
-
     private DSPGraph dspGraph;
     private AudioDriver driver;
     private AudioOutputHandle outputHandle;
-
-    private DSPNode oscNode;
+    private MixerNodeWrapper mixerNodeWrapper;
 
     void Awake() 
     {
@@ -34,24 +27,24 @@ public class DSPGraphManager : MonoBehaviour
         outputHandle = driver.AttachToDefaultOutput();
 
         var commandBlock = dspGraph.CreateCommandBlock();
-        oscNode = commandBlock.CreateDSPNode<OscNode.Parameters, OscNode.Providers, OscNode>();
-        commandBlock.AddOutletPort(oscNode, channels);
-        commandBlock.Connect(oscNode, 0, dspGraph.RootDSP, 0);
+
+        GameObject mixerObj = new GameObject("Mixer");
+        mixerNodeWrapper = mixerObj.AddComponent<MixerNodeWrapper>();
+        mixerNodeWrapper.Initialize(this, channels);
+
+        // TEST
+        GameObject sineObj = new GameObject("Sine");
+        OscNodeWrapper sineNodeWrapper = sineObj.AddComponent<OscNodeWrapper>();
+        sineNodeWrapper.Initialize(this, channels);
+        GameObject gateObj = new GameObject("Gate");
+        GateNodeWrapper gateNodeWrapper = gateObj.AddComponent<GateNodeWrapper>();
+        gateNodeWrapper.Initialize(this, channels);
+
         commandBlock.Complete();
     }
     
-    void Start()
-    {
-        
-    }
-
     void Update()
     {
-        var commandBlock = dspGraph.CreateCommandBlock();
-        commandBlock.SetFloat<OscNode.Parameters, OscNode.Providers, OscNode>(oscNode, OscNode.Parameters.Frequency, frequency);
-        commandBlock.SetFloat<OscNode.Parameters, OscNode.Providers, OscNode>(oscNode, OscNode.Parameters.Amplitude, amplitude);
-        commandBlock.Complete();
-
         dspGraph.Update();
     }
 
@@ -62,4 +55,6 @@ public class DSPGraphManager : MonoBehaviour
             dspGraph.Dispose();
         }
     }
+
+    public DSPGraph GetDSPGraph() => dspGraph;
 }
