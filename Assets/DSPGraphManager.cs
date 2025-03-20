@@ -19,7 +19,6 @@ public class DSPGraphManager : MonoBehaviour
     private AudioOutputHandle outputHandle;
 
     private DSPNode oscNode;
-    private NativeArray<float> sampleFrameValues;
 
     void Awake() 
     {
