@@ -8,7 +8,7 @@ using Unity.Mathematics;
 using Unity.Collections;
 
 [BurstCompile(CompileSynchronously = true)]
-public struct SineNode : IAudioKernel<SineNode.Parameters, SineNode.Providers>
+public struct TriangleNode : IAudioKernel<TriangleNode.Parameters, TriangleNode.Providers>
 {
     public enum Parameters
     {
@@ -22,45 +22,30 @@ public struct SineNode : IAudioKernel<SineNode.Parameters, SineNode.Providers>
     public enum Providers { }
 
     private float phase;
-    private float currentFrequency;
 
     public void Initialize() 
     {
         phase = 0f;
-        currentFrequency = 440f;
     }
 
     public void Execute(ref ExecuteContext<Parameters, Providers> context) 
     {
         SampleBuffer output = context.Outputs.GetSampleBuffer(0);
         SampleBuffer gateInput = context.Inputs.GetSampleBuffer(0);
-        SampleBuffer pitchInput = context.Inputs.GetSampleBuffer(1);
+        // SampleBuffer pitchInput = context.Inputs.GetSampleBuffer(1);
 
         int numChannels = output.Channels;
         int numSamples = output.Samples;
         int sampleRate = context.SampleRate;
 
-        float defaultFrequency = context.Parameters.GetFloat(Parameters.Frequency, 0);
+        float frequency = context.Parameters.GetFloat(Parameters.Frequency, 0);
         float amplitude = context.Parameters.GetFloat(Parameters.Amplitude, 0);
-
-        float smoothingFactor = 0.01f;
+        float phaseIncrement = 2f * math.PI * frequency / sampleRate;
 
         for (int s = 0; s < numSamples; s++)
         {
             float gateValue = gateInput.GetBuffer(0)[s];
-            float targetFrequency = defaultFrequency;
-
-            float pitchValue = pitchInput.GetBuffer(0)[s];
-            if (pitchValue > 0f) // check toggle instead of this
-            {
-                targetFrequency = pitchValue * 24000f;
-            }
-
-            currentFrequency = currentFrequency + (targetFrequency - currentFrequency) * smoothingFactor;
-
-            float phaseIncrement = 2f * math.PI * currentFrequency / sampleRate;
-            
-            float value = (gateValue == 1f) ? amplitude * math.sin(phase) : 0f; // TEMPORARY, doesnt work with no gate connexted
+            float value = (gateValue == 1f) ? amplitude * (2f * math.abs((phase / math.PI) - 1f) - 1f) : 0f; // TEMPORARY!!!!!!
 
             phase += phaseIncrement;
 

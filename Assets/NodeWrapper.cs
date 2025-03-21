@@ -9,4 +9,5 @@ public abstract class NodeWrapper : MonoBehaviour
 {
     public abstract void Initialize(DSPGraphManager manager, int channels);
     public abstract DSPNode GetDSPNode();
+    public virtual bool isOscillator { get; } = false;
 }

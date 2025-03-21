@@ -13,6 +13,22 @@ public class DSPGraphManager : MonoBehaviour
     private AudioOutputHandle outputHandle;
     private MixerNodeWrapper mixerNodeWrapper;
 
+    // Node prefabs
+    [SerializeField]
+    public GameObject sineOscPrefab;
+    [SerializeField]
+    public GameObject squareOscPrefab;
+    [SerializeField]
+    public GameObject triangleOscPrefab;
+    [SerializeField]
+    public GameObject sawtoothOscPrefab;
+    [SerializeField]
+    public GameObject gatePrefab;
+    [SerializeField]
+    public GameObject pitchPrefab;
+    [SerializeField]
+    public GameObject mixerPrefrab;
+
     void Awake() 
     {
         var format = ChannelEnumConverter.GetSoundFormatFromSpeakerMode(AudioSettings.speakerMode);
@@ -28,19 +44,65 @@ public class DSPGraphManager : MonoBehaviour
 
         var commandBlock = dspGraph.CreateCommandBlock();
 
-        GameObject mixerObj = new GameObject("Mixer");
-        mixerNodeWrapper = mixerObj.AddComponent<MixerNodeWrapper>();
-        mixerNodeWrapper.Initialize(this, channels);
-
-        // TEST
-        GameObject sineObj = new GameObject("Sine");
-        OscNodeWrapper sineNodeWrapper = sineObj.AddComponent<OscNodeWrapper>();
-        sineNodeWrapper.Initialize(this, channels);
-        GameObject gateObj = new GameObject("Gate");
-        GateNodeWrapper gateNodeWrapper = gateObj.AddComponent<GateNodeWrapper>();
-        gateNodeWrapper.Initialize(this, channels);
-
+        // Create the Mixer Node
+        Vector3 mixerPosition = new Vector3(0, 0, 0);
+        GameObject mixerObj = Instantiate(mixerPrefrab, mixerPosition, Quaternion.identity);
+        mixerObj.GetComponent<MixerNodeWrapper>().Initialize(this, channels);
         commandBlock.Complete();
+    }
+
+    public void CreateSineOscillatorNode(Vector3 position)
+    {
+        var format = ChannelEnumConverter.GetSoundFormatFromSpeakerMode(AudioSettings.speakerMode);
+        var channels = ChannelEnumConverter.GetChannelCountFromSoundFormat(format);
+
+        GameObject sineObj = Instantiate(sineOscPrefab, position, Quaternion.identity);
+        sineObj.GetComponent<OscNodeWrapper>().Initialize(this, channels);
+    }
+
+    public void CreateSquareOscillatorNode(Vector3 position)
+    {
+        var format = ChannelEnumConverter.GetSoundFormatFromSpeakerMode(AudioSettings.speakerMode);
+        var channels = ChannelEnumConverter.GetChannelCountFromSoundFormat(format);
+
+        GameObject squareObj = Instantiate(squareOscPrefab, position, Quaternion.identity);
+        squareObj.GetComponent<OscNodeWrapper>().Initialize(this, channels);
+    }
+
+    public void CreateTriangleOscillatorNode(Vector3 position)
+    {
+        var format = ChannelEnumConverter.GetSoundFormatFromSpeakerMode(AudioSettings.speakerMode);
+        var channels = ChannelEnumConverter.GetChannelCountFromSoundFormat(format);
+
+        GameObject triangleObj = Instantiate(triangleOscPrefab, position, Quaternion.identity);
+        triangleObj.GetComponent<OscNodeWrapper>().Initialize(this, channels);
+    }
+
+    public void CreateSawtoothOscillatorNode(Vector3 position)
+    {
+        var format = ChannelEnumConverter.GetSoundFormatFromSpeakerMode(AudioSettings.speakerMode);
+        var channels = ChannelEnumConverter.GetChannelCountFromSoundFormat(format);
+
+        GameObject sawtoothObj = Instantiate(sawtoothOscPrefab, position, Quaternion.identity);
+        sawtoothObj.GetComponent<OscNodeWrapper>().Initialize(this, channels);
+    }
+
+    public void CreateGateNode(Vector3 position)
+    {
+        var format = ChannelEnumConverter.GetSoundFormatFromSpeakerMode(AudioSettings.speakerMode);
+        var channels = ChannelEnumConverter.GetChannelCountFromSoundFormat(format);
+        
+        GameObject gateObj = Instantiate(gatePrefab, position, Quaternion.identity);
+        gateObj.GetComponent<GateNodeWrapper>().Initialize(this, channels);
+    }
+
+    public void CreatePitchNode(Vector3 position)
+    {
+        var format = ChannelEnumConverter.GetSoundFormatFromSpeakerMode(AudioSettings.speakerMode);
+        var channels = ChannelEnumConverter.GetChannelCountFromSoundFormat(format);
+        
+        GameObject pitchObj = Instantiate(pitchPrefab, position, Quaternion.identity);
+        pitchObj.GetComponent<PitchNodeWrapper>().Initialize(this, channels);
     }
     
     void Update()

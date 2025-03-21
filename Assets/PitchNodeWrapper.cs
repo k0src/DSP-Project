@@ -1,19 +1,14 @@
-using System.Collections;
-using System.Collections.Generic;
+using Unity.Audio;
 using UnityEngine;
 using UnityEngine.UI;
-using Unity.Mathematics;
-using System;
-using Unity.Audio;
-using Unity.Collections;
 
-public class GateNodeWrapper : NodeWrapper 
+public class PitchNodeWrapper : NodeWrapper 
 {
-    public override bool isOscillator { get; } = false;
-    
-    [SerializeField] private Slider speedSlider;
+    public new bool isOscillator = false;
 
-    private float speed = 0.5f;
+    [SerializeField] private Slider pitchSlider;
+
+    private float pitch = 0f;
 
     // Output Wrapper Node
     [SerializeField] private NodeWrapper outputNode;
@@ -24,34 +19,34 @@ public class GateNodeWrapper : NodeWrapper
     [SerializeField] private bool pollPortsButton = false;
 
     // DSP Node and DSP Graph
-    private DSPNode gateNode;
+    private DSPNode pitchNode;
     private DSPGraphManager graphManager;
 
     public override void Initialize(DSPGraphManager manager, int channels)
     {
-        Debug.Log("Initializing Gate Node");
+        Debug.Log("Initializing Pitch Node");
         graphManager = manager;
         var commandBlock = manager.GetDSPGraph().CreateCommandBlock();
 
-        // Create the Gate Node
-        gateNode = commandBlock.CreateDSPNode<GateNode.Parameters, GateNode.Providers, GateNode>();
+        // Create the Pitch Node
+        pitchNode = commandBlock.CreateDSPNode<PitchNode.Parameters, PitchNode.Providers, PitchNode>();
 
         // Add the Outlet Port
-        commandBlock.AddOutletPort(gateNode, channels);
+        commandBlock.AddOutletPort(pitchNode, channels);
         commandBlock.Complete();
     }
 
     // Make underlying DSPNode accessible
-    public override DSPNode GetDSPNode() => gateNode;
+    public override DSPNode GetDSPNode() => pitchNode;
 
     void Update()
     {
-        speed = speedSlider.value;
+        pitch = pitchSlider.value;
         
         var commandBlock = graphManager.GetDSPGraph().CreateCommandBlock();
 
-        // Set the Gate Parameters
-        commandBlock.SetFloat<GateNode.Parameters, GateNode.Providers, GateNode>(gateNode, GateNode.Parameters.Speed, speed);
+        // Set the Pitch Parameters
+        commandBlock.SetFloat<PitchNode.Parameters, PitchNode.Providers, PitchNode>(pitchNode, PitchNode.Parameters.Frequency, pitch);
 
         commandBlock.Complete();
 
@@ -68,10 +63,10 @@ public class GateNodeWrapper : NodeWrapper
         
         if (hasOutput)
         {
-            commandBlock.Disconnect(gateNode, 0, outputNode.GetDSPNode(), 0);
+            commandBlock.Disconnect(pitchNode, 0, outputNode.GetDSPNode(), 1);
         }
 
-        commandBlock.Connect(gateNode, outputPort, outputNode.GetDSPNode(), inputPort);
+        commandBlock.Connect(pitchNode, outputPort, outputNode.GetDSPNode(), inputPort);
         commandBlock.Complete();
     }
 
@@ -81,20 +76,27 @@ public class GateNodeWrapper : NodeWrapper
 
         if (hasOutput)
         {
-            ConnectOutputNode(0, 0);
+            if (outputNode.isOscillator)
+            {
+                ConnectOutputNode(0, 1); // connect to input port 1 if output node is an oscillator
+            }
+            else
+            {
+                ConnectOutputNode(0, 0);
+            }
         }
     }
 
     void OnDestroy()
     {
-        if (graphManager != null && gateNode.Valid)
+        if (graphManager != null && pitchNode.Valid)
         {
             var commandBlock = graphManager.GetDSPGraph().CreateCommandBlock();
             if (outputNode != null && outputNode.GetDSPNode().Valid)
             {
-                commandBlock.Disconnect(gateNode, 0, outputNode.GetDSPNode(), 0);
+                commandBlock.Disconnect(pitchNode, 0, outputNode.GetDSPNode(), 0);
             }
-            commandBlock.ReleaseDSPNode(gateNode);
+            commandBlock.ReleaseDSPNode(pitchNode);
             commandBlock.Complete();
         }
     }

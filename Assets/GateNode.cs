@@ -18,11 +18,9 @@ public struct GateNode : IAudioKernel<GateNode.Parameters, GateNode.Providers>
  
     public enum Providers { }
  
-    private int counter;
+    public void Initialize() { }
     
-    public void Initialize() 
-    {
-    }
+    private int counter;
 
     public void Execute(ref ExecuteContext<Parameters, Providers> context) 
     {

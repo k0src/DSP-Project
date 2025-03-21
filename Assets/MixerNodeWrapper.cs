@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 using Unity.Mathematics;
 using System;
 using Unity.Audio;
@@ -8,9 +9,11 @@ using Unity.Collections;
 
 public class MixerNodeWrapper : NodeWrapper 
 {
-    // Parameters
-    [Range(0f, 5f)]
-    public float masterGain = 1f;
+    public override bool isOscillator { get; } = false;
+
+    [SerializeField] public Slider gainSlider;
+
+    private float masterGain = 1f;
 
     // Input Nodes
     [SerializeField]
@@ -27,6 +30,7 @@ public class MixerNodeWrapper : NodeWrapper
 
     public override void Initialize(DSPGraphManager manager, int channels)
     {
+        Debug.Log("Initializing Mixer Node");
         graphManager = manager;
         var commandBlock = manager.GetDSPGraph().CreateCommandBlock();
 
@@ -50,7 +54,9 @@ public class MixerNodeWrapper : NodeWrapper
     public override DSPNode GetDSPNode() => mixerNode;
 
     void Update()
-    {        
+    {
+        masterGain = gainSlider.value;
+
         var commandBlock = graphManager.GetDSPGraph().CreateCommandBlock();
 
         // Set the Mixer Parameters
