@@ -6,7 +6,12 @@ public class PitchNodeWrapper : NodeWrapper
 {
     public new bool isOscillator = false;
 
+    // ui params
     [SerializeField] private Slider pitchSlider;
+    // [SerializeField] private Slider speedSlider;
+    // [SerializeField] private Slider lengthSlider;
+    // [SerializeField] private Slider evolutionSlider;
+    // [SerializeField] private Button randomizeButton;
 
     private float pitch = 0f;
 
